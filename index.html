@@ -515,7 +515,7 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(
 </div><!-- /app -->
 <script>
 // ★ Google Apps Script 웹 앱 URL (여기에 붙여넣기)
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybwT-9t2qbIqXFdEBbaRTWMSm32jfjvsI5_D-L2aWs65dQYZSbHQht6blc7PMshvcrXg/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxyywQhG6J25aufO9XqObXBLB4Nx05nQr3srCDaHo_LflfM-n0W5IqfwXC9mLkplqMb/exec';
 const ADMIN_PW = 'post1234';
 const ADMIN_MASTER = 'admin';
 const REGIONS_LIST = ['서울청','경인청','부산청','경북청','전북청','전남청','충청청','강원청','제주청'];
@@ -719,7 +719,6 @@ async function loadAdminData(){
       const p=parseKey(emp.key||'');
       emp.region=String(emp.region||p.region||'');
       emp.bureau=String(emp.bureau||p.bureau||'');
-      emp.birth=String(emp.birth||p.birth||'');
       emp.name=String(emp.name||p.name||'?');
       emp.records=(emp.records||[]).map(r=>({...r,date:toYMD(r.date||''),sys:Number(r.sys)||0,dia:Number(r.dia)||0})).filter(r=>r.date&&r.sys&&r.dia);
     });
@@ -746,15 +745,9 @@ function showAdminErr(msg){
 }
 
 function parseKey(key){
-  // key 형식: 서울청_광화문우체국_1001 (생년월일 없음)
-  // 또는 구형: 서울청_광화문우체국_19800315_1001 (생년월일 있음)
+  // key 형식: 서울청_광화문우체국_1001
   const p=String(key||'').split('_');
-  if(p.length>=4 && /^[0-9]{8}$/.test(p[2])){
-    // 구형 (생년월일 포함)
-    return {region:p[0]||'',bureau:p[1]||'',birth:p[2]||'',name:p.slice(3).join('_')||''};
-  }
-  // 신형 (생년월일 없음)
-  return {region:p[0]||'',bureau:p[1]||'',birth:'',name:p[2]||''};
+  return {region:p[0]||'',bureau:p[1]||'',name:p[p.length-1]||''};
 }
 
 // ── 관리자 직원 목록
@@ -1106,7 +1099,7 @@ async function saveBP(){
   btn.innerHTML='<i class="ti ti-loader" style="animation:spin 1s linear infinite;font-size:15px;vertical-align:-2px;margin-right:6px"></i>저장 중...';
   btn.disabled=true;
   try{
-    const res=await api({action:'save',...CU,date:dateVal,sys,dia});
+    const res=await api({action:'save',key:CU.key,bureau:CU.bureau,date:dateVal,sys,dia});
     if(res.ok){
       const isToday=dateVal===new Date().toISOString().split('T')[0];
       document.getElementById('ok-msg').textContent=isToday?'오늘 혈압이 저장되었습니다.':dateVal+' 혈압이 저장되었습니다.';
