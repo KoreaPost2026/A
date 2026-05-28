@@ -566,7 +566,15 @@ window.onload=()=>{
       CU=u;
       document.getElementById('emp-title').textContent='ID: '+u.name;
       initDate();
-      resetEmpForm();
+      // 항상 혈압 입력 탭으로 시작
+      document.getElementById('ok-banner').style.display='none';
+      document.getElementById('err-banner').style.display='none';
+      document.getElementById('bp-sys').value='';
+      document.getElementById('bp-dia').value='';
+      document.getElementById('bp-preview').innerHTML='';
+      document.querySelectorAll('#s-employee .tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+      document.getElementById('t-input').style.display='';
+      document.getElementById('t-history').style.display='none';
       go('s-employee');
       return;
     }catch(e){ localStorage.removeItem('bp_auto_login'); }
@@ -591,6 +599,13 @@ function badge(sys,dia){
   if(sys>=140||dia>=90)  return '<span class="badge b-high">😰 고혈압 1단계</span>';
   if(sys>120||dia>80)    return '<span class="badge b-caution">😐 주의</span>';
   return '<span class="badge b-normal">😊 정상</span>';
+}
+function shortBadge(sys,dia){
+  sys=Number(sys);dia=Number(dia);
+  if(sys>=160||dia>=100) return '<span class="badge b-vhigh" style="font-size:11px;padding:2px 5px">🚨 2단계</span>';
+  if(sys>=140||dia>=90)  return '<span class="badge b-high" style="font-size:11px;padding:2px 5px">😰 1단계</span>';
+  if(sys>120||dia>80)    return '<span class="badge b-caution" style="font-size:11px;padding:2px 5px">😐 주의</span>';
+  return '<span class="badge b-normal" style="font-size:11px;padding:2px 5px">😊 정상</span>';
 }
 
 function toYMD(d){
@@ -874,16 +889,16 @@ function renderRegionChart(){
   const maxSys=Math.max(...sysD);
   document.getElementById('region-table').innerHTML=
     '<div class="sec-title">청별 상세 (최근 14일 평균)</div>'+
-    '<div style="display:grid;grid-template-columns:1.2fr 0.6fr 0.7fr 0.7fr 1.1fr;font-size:11px;font-weight:700;color:var(--text2);background:var(--bg);padding:6px 4px;gap:4px">'+
+    '<div style="display:grid;grid-template-columns:1.3fr 0.6fr 0.7fr 0.7fr 0.8fr;font-size:11px;font-weight:700;color:var(--text2);background:var(--bg);padding:6px 6px;gap:0">'+
     '<span style="text-align:center">청명</span><span style="text-align:center">인원</span><span style="text-align:center">평균최고</span><span style="text-align:center">평균최저</span><span style="text-align:center">상태</span></div>'+
     labels.map((l,i)=>{
       const isWorst=sysD[i]===maxSys;
-      return `<div style="display:grid;grid-template-columns:1.2fr 0.6fr 0.7fr 0.7fr 1.1fr;gap:4px;padding:8px 4px;border-bottom:0.5px solid var(--border);align-items:center;font-size:12px;${isWorst?'background:#FFF0F0;border-left:3px solid #C8202F;':''}">
-        <span style="text-align:center;font-weight:${isWorst?700:400};color:${isWorst?'#C8202F':'var(--text1)'}">${l}청${isWorst?' 🚨':''}</span>
-        <span style="text-align:center;color:var(--text2)">${(grouped[l+'청']||[]).length}명</span>
-        <span style="text-align:center;color:#C8202F;font-weight:700">${sysD[i]}</span>
-        <span style="text-align:center;color:#185FA5;font-weight:700">${diaD[i]}</span>
-        <span style="text-align:center">${badge(sysD[i],diaD[i])}</span>
+      return `<div style="display:grid;grid-template-columns:1.3fr 0.6fr 0.7fr 0.7fr 0.8fr;gap:0;padding:${isWorst?'10px':'7px'} 6px;border-bottom:0.5px solid var(--border);border-left:${isWorst?'4px solid #C8202F':'4px solid transparent'};align-items:center;background:${isWorst?'#FFF0F0':'transparent'};">
+        <span style="text-align:center;font-size:${isWorst?'14px':'12px'};font-weight:${isWorst?700:400};color:${isWorst?'#C8202F':'var(--text1)'};">${l}청${isWorst?' 🚨':''}</span>
+        <span style="text-align:center;font-size:12px;color:var(--text2)">${(grouped[l+'청']||[]).length}명</span>
+        <span style="text-align:center;font-size:12px;color:#C8202F;font-weight:700">${sysD[i]}</span>
+        <span style="text-align:center;font-size:12px;color:#185FA5;font-weight:700">${diaD[i]}</span>
+        <span style="text-align:center">${shortBadge(sysD[i],diaD[i])}</span>
       </div>`;
     }).join('');
 }
@@ -929,28 +944,41 @@ function renderBureauChart(){
 function showBureauDetail(bureauName){
   const emps=_allEmployees.filter(e=>String(e.bureau)===bureauName);
   if(!emps.length){alert('해당 총괄국 직원 데이터가 없습니다.');return;}
-  let html=`<div class="sec-title">${bureauName} 직원 전체 (7일 평균)</div>`;
-  html+='<div style="display:grid;grid-template-columns:0.8fr 1fr 1fr;font-size:11px;font-weight:700;color:var(--text2);background:var(--bg);padding:6px 4px;gap:4px">'+
-    '<span style="text-align:center">ID</span><span style="text-align:center">7일 평균 혈압</span><span style="text-align:center">혈압 단계</span></div>';
+  let html=`<div class="sec-title" style="margin-bottom:10px">${bureauName} — 고위험군 14일 기록</div>`;
   emps.forEach(emp=>{
-    const recs=(emp.records||[]).slice(-7);
+    const recs=[...(emp.records||[])].sort((a,b)=>a.date.localeCompare(b.date)).slice(-14);
     if(!recs.length){
-      html+=`<div style="display:grid;grid-template-columns:0.8fr 1fr 1fr;gap:4px;padding:10px 4px;border-bottom:0.5px solid var(--border);align-items:center">
-        <span style="text-align:center;font-weight:700;color:var(--red)">${emp.name}</span>
-        <span style="text-align:center;font-size:11px;color:var(--text3)">기록없음</span>
-        <span style="text-align:center;font-size:11px;color:var(--text3)">-</span>
-      </div>`;
+      html+=`<div style="padding:10px;border-bottom:0.5px solid var(--border);font-size:12px;color:var(--text3)">ID:${emp.name} — 기록없음</div>`;
       return;
     }
-    const avgS7=Math.round(recs.reduce((s,r)=>s+r.sys,0)/recs.length);
-    const avgD7=Math.round(recs.reduce((s,r)=>s+r.dia,0)/recs.length);
-    const emoji=badgeEmoji(avgS7,avgD7);
-    const color=badgeColor(avgS7,avgD7);
-    const bg=badgeBg(avgS7,avgD7);
-    html+=`<div style="display:grid;grid-template-columns:0.8fr 1fr 1fr;gap:4px;padding:10px 4px;border-bottom:0.5px solid var(--border);align-items:center;background:${bg}20">
-      <span style="text-align:center;font-size:13px;font-weight:700;color:var(--red)">${emp.name}</span>
-      <span style="text-align:center;font-size:16px;font-weight:700;color:${color}">${avgS7}/${avgD7}</span>
-      <div style="text-align:center">${badge(avgS7,avgD7)}</div>
+    const avgS=Math.round(recs.reduce((s,r)=>s+r.sys,0)/recs.length);
+    const avgD=Math.round(recs.reduce((s,r)=>s+r.dia,0)/recs.length);
+    const emoji=badgeEmoji(avgS,avgD);
+    const color=badgeColor(avgS,avgD);
+    const bg=badgeBg(avgS,avgD);
+    // 날짜별 행 (최고/최저만)
+    const recRows=recs.map(r=>`
+      <div style="display:grid;grid-template-columns:1.4fr 0.8fr 0.8fr;gap:2px;padding:3px 0;border-bottom:0.5px solid #f0f0f0;font-size:11px">
+        <span style="color:var(--text2)">${r.date}</span>
+        <span style="text-align:center;color:#C8202F;font-weight:600">${r.sys}</span>
+        <span style="text-align:center;color:#185FA5;font-weight:600">${r.dia}</span>
+      </div>`).join('');
+    html+=`<div style="border:1px solid ${color}40;border-radius:10px;margin-bottom:10px;overflow:hidden">
+      <!-- 헤더 -->
+      <div style="background:${bg};padding:10px 12px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:14px;font-weight:700;color:${color}">ID: ${emp.name}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:18px">${emoji}</span>
+          <span style="font-size:16px;font-weight:700;color:${color}">${avgS}/${avgD}</span>
+          <span style="font-size:11px;color:${color};font-weight:600">14일 평균</span>
+        </div>
+      </div>
+      <!-- 날짜 헤더 -->
+      <div style="display:grid;grid-template-columns:1.4fr 0.8fr 0.8fr;gap:2px;padding:4px 12px;background:#f8f8f8;font-size:10px;font-weight:700;color:var(--text2)">
+        <span>날짜</span><span style="text-align:center;color:#C8202F">최고</span><span style="text-align:center;color:#185FA5">최저</span>
+      </div>
+      <!-- 기록 -->
+      <div style="padding:0 12px 6px">${recRows}</div>
     </div>`;
   });
   document.getElementById('bureau-table').innerHTML=html;
