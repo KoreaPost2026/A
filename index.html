@@ -298,14 +298,14 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(
         <input type="text" id="emp-name" placeholder="예: 0012" maxlength="4" inputmode="numeric" autocomplete="off">
       </div>
       <div class="fg" style="margin-bottom:0">
-        <label>생년월일 6자리 (본인 확인용)</label>
-        <input type="password" id="emp-pin" placeholder="예: 800315" maxlength="6" inputmode="numeric">
-        <p class="hint">생년월일 앞 6자리 입력 (예: 1980년 3월 15일 → 800315)</p>
+        <label>휴대폰 뒷자리 4자리 (비밀번호)</label>
+        <input type="password" id="emp-pin" placeholder="예: 3651" maxlength="4" inputmode="numeric">
+        <p class="hint">본인 휴대폰 번호 뒷자리 4자리를 비밀번호로 사용합니다.</p>
       </div>
     </div>
     <div class="info-box">
       <i class="ti ti-info-circle"></i>
-      <span>담당자에게 부여받은 ID와 생년월일 6자리를 입력하세요. 처음 사용 시 자동 등록됩니다.</span>
+      <span>담당자에게 부여받은 ID와 휴대폰 뒷자리 4자리를 입력하세요. 처음 사용 시 자동 등록됩니다.</span>
     </div>
     <button class="btn btn-primary" onclick="empLogin()">로그인 / 등록</button>
   </div>
@@ -402,6 +402,7 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(
       <div class="metric-grid" id="emp-stats"></div>
       <div class="card">
         <div class="card-hd"><i class="ti ti-chart-line"></i><h3>혈압 추이 (최근 14일)</h3></div>
+        <div id="emp-avg-cards" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px"></div>
         <div class="legend">
           <span><span class="ld" style="background:#C8202F"></span>최고혈압</span>
           <span><span class="ld" style="background:#185FA5"></span>최저혈압</span>
@@ -496,7 +497,7 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(
 </div><!-- /app -->
 <script>
 // ★ Google Apps Script 웹 앱 URL (여기에 붙여넣기)
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwdyxp-jnt4UOYkBNz7Ts37lYdXQYx46qD2pbFjLaty7MPBJh7HatHPzE0PKJZ5YvncNA/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdhyy7QaCs8nPVI1sMKuiwwgQVhJzH6k6ieHssvSnN3iyyFg9pSdDcKugifhg3vxSVdw/exec';
 const ADMIN_PW = 'post1234';
 const ADMIN_MASTER = 'admin';
 const REGIONS_LIST = ['서울청','경인청','부산청','경북청','전북청','전남청','충청청','강원청','제주청'];
@@ -611,7 +612,7 @@ function empLogin(){
   if(!region){alert('지방우정청을 선택해주세요.');return;}
   if(!bureau){alert('총괄국을 선택해주세요.');return;}
   if(!/^[0-9]{4}$/.test(name)){alert('사용자 ID는 숫자 4자리입니다.');return;}
-  if(!/^[0-9]{6}$/.test(pin)){alert('생년월일 6자리를 입력해주세요.\\n예: 1980년 3월 15일 → 800315');return;}
+  if(!/^[0-9]{4}$/.test(pin)){alert('휴대폰 뒷자리 4자리를 입력해주세요.');return;}
   const isJip=bureau.includes('우편집중국')||bureau.includes('물류센터');
   const bureauFull=isJip?bureau:bureau+'우체국';
   const key=region+'_'+bureauFull+'_'+name;
@@ -953,6 +954,24 @@ function renderStats(id,recs){
     <div class="metric"><div class="m-label">최근 최고혈압</div><div class="m-val">${lat.sys}<span class="m-unit"> mmHg</span></div></div>
     <div class="metric"><div class="m-label">최근 최저혈압</div><div class="m-val">${lat.dia}<span class="m-unit"> mmHg</span></div></div>
     <div class="metric"><div class="m-label">14일 평균</div><div class="m-val" style="font-size:16px">${avgS}/${avgD}</div></div>`;
+  // 그래프 위 평균 카드 (개인/상세 화면)
+  const avgCardId = id==='emp-stats' ? 'emp-avg-cards' : 'detail-avg-cards';
+  const avgEl = document.getElementById(avgCardId);
+  if(avgEl){
+    const sysColor = avgS>=160?'#C8202F':avgS>=140?'#C8202F':avgS>120?'#854F0B':'#1A6B3C';
+    const diaColor = avgD>=100?'#C8202F':avgD>=90?'#C8202F':avgD>80?'#854F0B':'#1A6B3C';
+    avgEl.innerHTML=`
+      <div style="background:#FFF5F5;border:1px solid #FFCCCC;border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:4px">14일 평균 최고혈압</div>
+        <div style="font-size:28px;font-weight:700;color:${sysColor}">${avgS}</div>
+        <div style="font-size:11px;color:#aaa">mmHg</div>
+      </div>
+      <div style="background:#F5F8FF;border:1px solid #CCDDFF;border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:4px">14일 평균 최저혈압</div>
+        <div style="font-size:28px;font-weight:700;color:${diaColor}">${avgD}</div>
+        <div style="font-size:11px;color:#aaa">mmHg</div>
+      </div>`;
+  }
 }
 
 function renderRecs(id,recs){
