@@ -115,8 +115,8 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(
 /* 통계 카드 */
 .metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
 .metric{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r-md);padding:10px 12px}
-.m-label{font-size:11px;color:var(--text2);margin-bottom:3px;font-weight:600}
-.m-val{font-size:20px;font-weight:700;color:var(--text1)}
+.m-label{font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:600}
+.m-val{font-size:26px;font-weight:700;color:var(--text1)}
 .m-unit{font-size:11px;font-weight:400;color:var(--text3)}
 
 /* 차트 */
@@ -515,7 +515,7 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(
 </div><!-- /app -->
 <script>
 // ★ Google Apps Script 웹 앱 URL (여기에 붙여넣기)
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdhyy7QaCs8nPVI1sMKuiwwgQVhJzH6k6ieHssvSnN3iyyFg9pSdDcKugifhg3vxSVdw/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybwT-9t2qbIqXFdEBbaRTWMSm32jfjvsI5_D-L2aWs65dQYZSbHQht6blc7PMshvcrXg/exec';
 const ADMIN_PW = 'post1234';
 const ADMIN_MASTER = 'admin';
 const REGIONS_LIST = ['서울청','경인청','부산청','경북청','전북청','전남청','충청청','강원청','제주청'];
@@ -771,14 +771,14 @@ function renderAdminList(employees){
   // 역할별 헤더
   let header='';
   if(_adminType==='master')
-    header=`<div class="rec-row" style="font-size:11px;font-weight:700;color:var(--text2);background:var(--bg);padding:6px 2px;border-radius:6px;margin-bottom:4px">
-      <span style="flex:1.2">소속청</span><span style="flex:1.5">소속국</span><span style="flex:0.7">ID</span><span style="flex:1;text-align:right">오늘 혈압</span></div>`;
+    header=`<div style="display:grid;grid-template-columns:1fr 1.3fr 0.7fr 1.3fr;font-size:11px;font-weight:700;color:var(--text2);background:var(--bg);padding:6px 4px;border-radius:6px;margin-bottom:4px;gap:4px">
+      <span style="text-align:center">소속청</span><span style="text-align:center">소속국</span><span style="text-align:center">ID</span><span style="text-align:center">오늘 혈압</span></div>`;
   else if(_adminType==='region')
-    header=`<div class="rec-row" style="font-size:11px;font-weight:700;color:var(--text2);background:var(--bg);padding:6px 2px;border-radius:6px;margin-bottom:4px">
-      <span style="flex:2">소속국</span><span style="flex:0.7">ID</span><span style="flex:1;text-align:right">오늘 혈압</span></div>`;
+    header=`<div style="display:grid;grid-template-columns:1.5fr 0.8fr 1.2fr;font-size:11px;font-weight:700;color:var(--text2);background:var(--bg);padding:6px 4px;border-radius:6px;margin-bottom:4px;gap:4px">
+      <span style="text-align:center">소속국</span><span style="text-align:center">ID</span><span style="text-align:center">오늘 혈압</span></div>`;
   else
-    header=`<div class="rec-row" style="font-size:11px;font-weight:700;color:var(--text2);background:var(--bg);padding:6px 2px;border-radius:6px;margin-bottom:4px">
-      <span style="flex:1">ID</span><span style="flex:1;text-align:right">오늘 혈압</span></div>`;
+    header=`<div style="display:grid;grid-template-columns:1fr 1fr;font-size:11px;font-weight:700;color:var(--text2);background:var(--bg);padding:6px 4px;border-radius:6px;margin-bottom:4px;gap:4px">
+      <span style="text-align:center">ID</span><span style="text-align:center">오늘 혈압</span></div>`;
 
   const rows=top.map(emp=>{
     const recs=emp.records||[];
@@ -871,17 +871,21 @@ function renderRegionChart(){
     scales:{y:{min:60,max:180,ticks:{font:{size:10}}},x:{ticks:{font:{size:10}}}}}});
 
   // 표
+  const maxSys=Math.max(...sysD);
   document.getElementById('region-table').innerHTML=
     '<div class="sec-title">청별 상세 (최근 14일 평균)</div>'+
-    '<div class="rec-row" style="font-size:11px;font-weight:700;color:var(--text2);background:var(--bg);padding:6px 2px">'+
-    '<span style="flex:1.5">청명</span><span style="flex:0.6;text-align:center">인원</span><span style="flex:0.7;text-align:center">평균최고</span><span style="flex:0.7;text-align:center">평균최저</span><span style="flex:1;text-align:right">상태</span></div>'+
-    labels.map((l,i)=>`<div class="rec-row" style="font-size:12px">
-      <span style="flex:1.5">${l}청</span>
-      <span style="flex:0.6;text-align:center;color:var(--text2)">${(grouped[l+'청']||[]).length}명</span>
-      <span style="flex:0.7;text-align:center;color:#C8202F;font-weight:700">${sysD[i]}</span>
-      <span style="flex:0.7;text-align:center;color:#185FA5;font-weight:700">${diaD[i]}</span>
-      <span style="flex:1;text-align:right">${badge(sysD[i],diaD[i])}</span>
-    </div>`).join('');
+    '<div style="display:grid;grid-template-columns:1.2fr 0.6fr 0.7fr 0.7fr 1.1fr;font-size:11px;font-weight:700;color:var(--text2);background:var(--bg);padding:6px 4px;gap:4px">'+
+    '<span style="text-align:center">청명</span><span style="text-align:center">인원</span><span style="text-align:center">평균최고</span><span style="text-align:center">평균최저</span><span style="text-align:center">상태</span></div>'+
+    labels.map((l,i)=>{
+      const isWorst=sysD[i]===maxSys;
+      return `<div style="display:grid;grid-template-columns:1.2fr 0.6fr 0.7fr 0.7fr 1.1fr;gap:4px;padding:8px 4px;border-bottom:0.5px solid var(--border);align-items:center;font-size:12px;${isWorst?'background:#FFF0F0;border-left:3px solid #C8202F;':''}">
+        <span style="text-align:center;font-weight:${isWorst?700:400};color:${isWorst?'#C8202F':'var(--text1)'}">${l}청${isWorst?' 🚨':''}</span>
+        <span style="text-align:center;color:var(--text2)">${(grouped[l+'청']||[]).length}명</span>
+        <span style="text-align:center;color:#C8202F;font-weight:700">${sysD[i]}</span>
+        <span style="text-align:center;color:#185FA5;font-weight:700">${diaD[i]}</span>
+        <span style="text-align:center">${badge(sysD[i],diaD[i])}</span>
+      </div>`;
+    }).join('');
 }
 
 function renderBureauChart(){
@@ -925,22 +929,28 @@ function renderBureauChart(){
 function showBureauDetail(bureauName){
   const emps=_allEmployees.filter(e=>String(e.bureau)===bureauName);
   if(!emps.length){alert('해당 총괄국 직원 데이터가 없습니다.');return;}
-  const _now=new Date();
-  // UTC 기준으로 오늘 날짜 계산 (구글 시트 날짜와 일치)
-  const todayStr=_now.getUTCFullYear()+'-'+String(_now.getUTCMonth()+1).padStart(2,'0')+'-'+String(_now.getUTCDate()).padStart(2,'0');
-  let html=`<div class="sec-title">${bureauName} 직원 전체 데이터</div>`;
-  html+='<div class="rec-row" style="font-size:11px;font-weight:700;color:var(--text2);background:var(--bg);padding:6px 2px">'+
-    '<span style="flex:0.8">ID</span><span style="flex:2">전체 기록</span><span style="flex:0.8;text-align:right">오늘</span></div>';
+  let html=`<div class="sec-title">${bureauName} 직원 전체 (7일 평균)</div>`;
+  html+='<div style="display:grid;grid-template-columns:0.8fr 1fr 1fr;font-size:11px;font-weight:700;color:var(--text2);background:var(--bg);padding:6px 4px;gap:4px">'+
+    '<span style="text-align:center">ID</span><span style="text-align:center">7일 평균 혈압</span><span style="text-align:center">혈압 단계</span></div>';
   emps.forEach(emp=>{
-    const recs=[...(emp.records||[])].sort((a,b)=>b.date.localeCompare(a.date));
-    const todayRec=recs.find(r=>toYMD(r.date)===todayStr);
-    const recsHtml=recs.slice(0,7).map(r=>
-      `<div style="font-size:11px;color:var(--text2);margin-bottom:2px">${r.date}: <b style="color:var(--text1)">${r.sys}/${r.dia}</b> ${badge(r.sys,r.dia)}</div>`
-    ).join('');
-    html+=`<div class="rec-row" style="align-items:flex-start;padding:10px 0">
-      <span style="flex:0.8;font-size:13px;font-weight:700;color:var(--red)">${emp.name}</span>
-      <div style="flex:2">${recsHtml||'<span style="font-size:11px;color:var(--text3)">기록없음</span>'}</div>
-      <div style="flex:0.8;text-align:right">${todayRec?badge(todayRec.sys,todayRec.dia):'<span style="font-size:11px;color:var(--text3)">미입력</span>'}</div>
+    const recs=(emp.records||[]).slice(-7);
+    if(!recs.length){
+      html+=`<div style="display:grid;grid-template-columns:0.8fr 1fr 1fr;gap:4px;padding:10px 4px;border-bottom:0.5px solid var(--border);align-items:center">
+        <span style="text-align:center;font-weight:700;color:var(--red)">${emp.name}</span>
+        <span style="text-align:center;font-size:11px;color:var(--text3)">기록없음</span>
+        <span style="text-align:center;font-size:11px;color:var(--text3)">-</span>
+      </div>`;
+      return;
+    }
+    const avgS7=Math.round(recs.reduce((s,r)=>s+r.sys,0)/recs.length);
+    const avgD7=Math.round(recs.reduce((s,r)=>s+r.dia,0)/recs.length);
+    const emoji=badgeEmoji(avgS7,avgD7);
+    const color=badgeColor(avgS7,avgD7);
+    const bg=badgeBg(avgS7,avgD7);
+    html+=`<div style="display:grid;grid-template-columns:0.8fr 1fr 1fr;gap:4px;padding:10px 4px;border-bottom:0.5px solid var(--border);align-items:center;background:${bg}20">
+      <span style="text-align:center;font-size:13px;font-weight:700;color:var(--red)">${emp.name}</span>
+      <span style="text-align:center;font-size:16px;font-weight:700;color:${color}">${avgS7}/${avgD7}</span>
+      <div style="text-align:center">${badge(avgS7,avgD7)}</div>
     </div>`;
   });
   document.getElementById('bureau-table').innerHTML=html;
@@ -1003,16 +1013,19 @@ function renderStats(id,recs){
   const avgBg=badgeBg(avgS,avgD);
   el.innerHTML=`
     <div class="metric" style="background:${latBg};border:1px solid ${latColor}30">
-      <div class="m-label" style="color:${latColor}">${latEmoji} 최근 최고혈압</div>
+      <div style="font-size:22px;margin-bottom:3px">${latEmoji}</div>
+      <div class="m-label" style="color:${latColor}">최근 최고혈압</div>
       <div class="m-val" style="color:${latColor}">${lat.sys}<span class="m-unit"> mmHg</span></div>
     </div>
     <div class="metric" style="background:${latBg};border:1px solid ${latColor}30">
-      <div class="m-label" style="color:${latColor}">${latEmoji} 최근 최저혈압</div>
+      <div style="font-size:22px;margin-bottom:3px">${latEmoji}</div>
+      <div class="m-label" style="color:${latColor}">최근 최저혈압</div>
       <div class="m-val" style="color:${latColor}">${lat.dia}<span class="m-unit"> mmHg</span></div>
     </div>
     <div class="metric" style="background:${avgBg};border:1px solid ${avgColor}30">
-      <div class="m-label" style="color:${avgColor}">${avgEmoji} 14일 평균</div>
-      <div class="m-val" style="font-size:16px;color:${avgColor}">${avgS}/${avgD}</div>
+      <div style="font-size:22px;margin-bottom:3px">${avgEmoji}</div>
+      <div class="m-label" style="color:${avgColor}">14일 평균</div>
+      <div class="m-val" style="font-size:22px;color:${avgColor}">${avgS}/${avgD}</div>
     </div>`;
   // 그래프 위 avg카드 — 제거(숨김)
   const avgCardId = id==='emp-stats' ? 'emp-avg-cards' : 'detail-avg-cards';
