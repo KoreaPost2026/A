@@ -166,7 +166,7 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(
         <div style="font-size:10px;color:rgba(255,255,255,0.75);line-height:1.2">Korea Post</div>
       </div>
     </div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.8);text-align:right;line-height:1.4">부산지방우정청<br>건강관리 시스템</div>
+
   </div>
 
   <!-- 메인 히어로 섹션 -->
@@ -297,17 +297,21 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(
         <label>사용자 ID (담당자 부여, 숫자 4자리)</label>
         <input type="text" id="emp-name" placeholder="예: 0012" maxlength="4" inputmode="numeric" autocomplete="off">
       </div>
-      <div class="fg" style="margin-bottom:0">
+      <div class="fg">
         <label>휴대폰 뒷자리 4자리 (비밀번호)</label>
         <input type="password" id="emp-pin" placeholder="예: 3651" maxlength="4" inputmode="numeric">
         <p class="hint">본인 휴대폰 번호 뒷자리 4자리를 비밀번호로 사용합니다.</p>
       </div>
+      <div class="fg" id="pin-confirm-wrap" style="margin-bottom:0;display:none">
+        <label>비밀번호 확인 (한 번 더 입력)</label>
+        <input type="password" id="emp-pin2" placeholder="동일하게 입력" maxlength="4" inputmode="numeric">
+      </div>
     </div>
     <div class="info-box">
       <i class="ti ti-info-circle"></i>
-      <span>담당자에게 부여받은 ID와 휴대폰 뒷자리 4자리를 입력하세요. 처음 사용 시 자동 등록됩니다.</span>
+      <span id="login-info-text">담당자에게 부여받은 ID와 휴대폰 뒷자리 4자리를 입력하세요.</span>
     </div>
-    <button class="btn btn-primary" onclick="empLogin()">로그인 / 등록</button>
+    <button class="btn btn-primary" onclick="empLogin()">로그인</button>
   </div>
 </div>
 
@@ -466,7 +470,7 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(
     </div>
     <div id="at-bureau" style="display:none">
       <div class="card">
-        <div class="card-hd"><i class="ti ti-map-pin"></i><h3>총괄국별 평균 혈압 <small style="font-size:10px;color:var(--text3);font-weight:400">(최근 7일)</small></h3></div>
+        <div class="card-hd"><i class="ti ti-map-pin"></i><h3>총괄국별 평균 혈압 <small style="font-size:10px;color:var(--text3);font-weight:400">(최근 14일)</small></h3></div>
         <div class="fg" style="margin-bottom:12px">
           <label>청 선택</label>
           <select id="bureau-region-sel" onchange="renderBureauChart()">
@@ -650,11 +654,33 @@ function empLogin(){
   const bureauFull=isJip?bureau:bureau+'우체국';
   const key=region+'_'+bureauFull+'_'+name;
   const storedPin=localStorage.getItem('pin_'+key);
-  if(storedPin && storedPin!==pin){
-    alert('비밀번호가 일치하지 않습니다.\n비밀번호를 잊으셨으면 아래 "비밀번호 재설정" 버튼을 눌러주세요.');
-    return;
+  // 기존 등록자: 비밀번호 1번 확인
+  if(storedPin){
+    if(storedPin!==pin){
+      alert('비밀번호가 일치하지 않습니다.\n휴대폰 뒷자리 4자리를 다시 확인해주세요.');
+      return;
+    }
+  } else {
+    // 최초 등록: 비밀번호 2번 확인
+    const confirmWrap=document.getElementById('pin-confirm-wrap');
+    if(confirmWrap.style.display==='none'){
+      confirmWrap.style.display='';
+      document.getElementById('login-info-text').textContent='처음 등록입니다. 비밀번호를 한 번 더 입력해주세요.';
+      document.getElementById('emp-pin2').focus();
+      return;
+    }
+    const pin2=document.getElementById('emp-pin2').value.trim();
+    if(!/^[0-9]{4}$/.test(pin2)){alert('비밀번호 확인을 입력해주세요.');return;}
+    if(pin!==pin2){
+      alert('비밀번호가 일치하지 않습니다.\n다시 입력해주세요.');
+      document.getElementById('emp-pin').value='';
+      document.getElementById('emp-pin2').value='';
+      confirmWrap.style.display='none';
+      document.getElementById('login-info-text').textContent='담당자에게 부여받은 ID와 휴대폰 뒷자리 4자리를 입력하세요.';
+      return;
+    }
+    localStorage.setItem('pin_'+key, pin);
   }
-  if(!storedPin) localStorage.setItem('pin_'+key, pin);
   CU={key,name,region,bureau:bureauFull};
   localStorage.setItem('bp_auto_login',JSON.stringify(CU));
   document.getElementById('emp-title').textContent='No.'+name;
@@ -668,7 +694,12 @@ function empLogout(){
   if(confirm('로그아웃 하시겠습니까?')){
     localStorage.removeItem('bp_auto_login');
     CU=null;
-    go('s-home');
+    // 로그아웃 후 비밀번호 입력 화면으로 (지방청·총괄국·ID는 유지)
+    document.getElementById('emp-pin').value='';
+    document.getElementById('emp-pin2').value='';
+    document.getElementById('pin-confirm-wrap').style.display='none';
+    document.getElementById('login-info-text').textContent='담당자에게 부여받은 ID와 휴대폰 뒷자리 4자리를 입력하세요.';
+    go('s-login-emp');
   }
 }
 
@@ -872,9 +903,12 @@ function renderRegionChart(){
   if(regionCI){regionCI.destroy();regionCI=null;}
   const canvas=document.getElementById('regionChart');
   if(!canvas||!labels.length) return;
+  const maxSysVal=Math.max(...sysD);
+  const sysColors=sysD.map(v=>v===maxSysVal?'rgba(200,32,47,1)':'rgba(200,32,47,0.45)');
+  const diaColors=diaD.map((v,i)=>sysD[i]===maxSysVal?'rgba(24,95,165,1)':'rgba(24,95,165,0.4)');
   regionCI=new Chart(canvas,{type:'bar',data:{labels,datasets:[
-    {label:'평균최고',data:sysD,backgroundColor:'rgba(200,32,47,0.75)',borderRadius:4},
-    {label:'평균최저',data:diaD,backgroundColor:'rgba(24,95,165,0.65)',borderRadius:4}
+    {label:'평균최고',data:sysD,backgroundColor:sysColors,borderRadius:4,borderWidth:sysD.map(v=>v===maxSysVal?2:0),borderColor:'#C8202F'},
+    {label:'평균최저',data:diaD,backgroundColor:diaColors,borderRadius:4}
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
     scales:{y:{min:60,max:180,ticks:{font:{size:10}}},x:{ticks:{font:{size:10}}}}}});
 
@@ -907,7 +941,7 @@ function renderBureauChart(){
     bMap[b].push(emp);
   });
   const entries=Object.entries(bMap).map(([b,list])=>{
-    const avgs=list.map(e=>avg7(e)).filter(Boolean);
+    const avgs=list.map(e=>avg14(e)).filter(Boolean);
     if(!avgs.length) return null;
     return {bureau:b,sys:Math.round(avgs.reduce((s,a)=>s+a.sys,0)/avgs.length),
             dia:Math.round(avgs.reduce((s,a)=>s+a.dia,0)/avgs.length),cnt:list.length};
@@ -923,7 +957,7 @@ function renderBureauChart(){
     scales:{x:{min:60,max:180,ticks:{font:{size:10}}},y:{ticks:{font:{size:9}}}}}});
 
   document.getElementById('bureau-table').innerHTML=
-    '<div class="sec-title">총괄국별 상세 (최근 7일 평균) <small style="font-weight:400;color:var(--text3)">— 클릭하면 직원 전체 데이터</small></div>'+
+    '<div class="sec-title">총괄국별 상세 (최근 14일 평균) <small style="font-weight:400;color:var(--text3)">— 클릭하면 직원 전체 데이터</small></div>'+
     '<div class="rec-row" style="font-size:11px;font-weight:700;color:var(--text2);background:var(--bg);padding:6px 2px">'+
     '<span style="flex:2">총괄국</span><span style="flex:0.6;text-align:center">인원</span><span style="flex:0.7;text-align:center">평균최고</span><span style="flex:0.7;text-align:center">평균최저</span></div>'+
     entries.map(e=>`<div class="emp-row" style="font-size:12px" onclick="showBureauDetail('${e.bureau}')">
@@ -1059,9 +1093,10 @@ function renderRecs(id,recs){
   if(!recs.length){el.innerHTML='<div class="no-data">기록이 없습니다.</div>';return;}
   el.innerHTML='<div class="sec-title">측정 기록</div>'+
     [...recs].reverse().map(r=>`
-    <div class="rec-row">
-      <span class="rec-date">${r.date}</span>
-      <div class="rec-right"><span class="rec-val">${r.sys}/${r.dia}</span>${badge(r.sys,r.dia)}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border);text-align:center">
+      <span style="font-size:13px;color:var(--text2)">${r.date}</span>
+      <span style="font-size:14px;font-weight:700;color:var(--text1)">${r.sys}/${r.dia}</span>
+      <span>${badge(r.sys,r.dia)}</span>
     </div>`).join('');
 }
 
