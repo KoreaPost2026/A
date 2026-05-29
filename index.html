@@ -294,8 +294,8 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(
         <select id="emp-bureau"><option value="">지방우정청을 먼저 선택하세요</option></select>
       </div>
       <div class="fg">
-        <label>사용자 ID (담당자 부여, 숫자 4자리)</label>
-        <input type="text" id="emp-name" placeholder="예: 0012" maxlength="4" inputmode="numeric" autocomplete="off">
+        <label>ID (숫자 4자리)</label>
+        <input type="text" id="emp-name" placeholder="숫자 4자리의 ID를 입력해주세요" maxlength="4" inputmode="numeric" autocomplete="off">
       </div>
       <div class="fg">
         <label>휴대폰 뒷자리 4자리 (비밀번호)</label>
@@ -309,7 +309,7 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(
     </div>
     <div class="info-box">
       <i class="ti ti-info-circle"></i>
-      <span id="login-info-text">담당자에게 부여받은 ID와 휴대폰 뒷자리 4자리를 입력하세요.</span>
+      <span id="login-info-text">숫자 4자리의 ID와 휴대폰 뒷자리 4자리를 입력하세요.</span>
     </div>
     <button class="btn btn-primary" onclick="empLogin()">로그인</button>
   </div>
@@ -362,6 +362,11 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(
       <button class="tab active" onclick="empTab('input',this)"><i class="ti ti-pencil" style="font-size:16px;margin-right:5px;vertical-align:-2px"></i>혈압 입력</button>
       <button class="tab" onclick="empTab('history',this)"><i class="ti ti-chart-line" style="font-size:16px;margin-right:5px;vertical-align:-2px"></i>내 기록</button>
     </div>
+    <div class="tip-card" style="margin-bottom:0.75rem">
+      <i class="ti ti-bulb"></i>
+      <div><div class="tip-title">건강 생활습관 TIP</div>
+      <div class="tip-body">🥗 싱겁게 먹기 &nbsp;·&nbsp; 🏃 규칙적인 운동 &nbsp;·&nbsp; ⚖️ 적정 체중 유지</div></div>
+    </div>
     <div id="t-input">
       <div class="ok-banner" id="ok-banner"><i class="ti ti-circle-check" style="font-size:18px"></i><span id="ok-msg">저장되었습니다.</span></div>
       <div class="err-banner" id="err-banner"><i class="ti ti-alert-circle" style="font-size:18px"></i><span id="err-msg"></span></div>
@@ -386,39 +391,42 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(
         </div>
         <div class="preview" id="bp-preview"></div>
       </div>
-      <button class="btn btn-primary" id="save-btn" onclick="saveBP()" style="margin-bottom:1rem">
+      <button class="btn btn-primary" id="save-btn" onclick="saveBP()" style="margin-bottom:0.6rem">
         <i class="ti ti-device-floppy" style="font-size:15px;vertical-align:-2px;margin-right:6px"></i>기록 저장
       </button>
+      <div style="background:#F0F7FF;border:0.5px solid #AACCFF;border-radius:10px;padding:10px 12px;margin-bottom:0.8rem;font-size:11px;color:#1F4E79;line-height:1.7">
+        <div style="font-weight:700;margin-bottom:4px">💡 혈압 10mmHg 낮추면?</div>
+        <div>🧠 뇌졸중 위험 <b>27%</b> 감소</div>
+        <div>❤️ 심근경색·심장질환 위험 <b>20~25%</b> 감소</div>
+        <div>🫀 심부전 발생위험 <b>25%</b> 감소</div>
+        <div>⏳ 조기사망률 <b>13%</b> 감소</div>
+      </div>
       <div class="card">
         <div class="card-hd"><i class="ti ti-info-square"></i><h3>혈압 기준표</h3></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
-          <div style="background:#EAF3DE;border-radius:12px;padding:12px;text-align:center">
-            <div style="font-size:22px;margin-bottom:4px">😊</div>
-            <div style="font-size:13px;font-weight:700;color:#3B6D11">정상</div>
-            <div style="font-size:11px;color:#3B6D11;margin-top:2px">120/80 이하</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px">
+          <div style="background:#EAF3DE;border-radius:10px;padding:8px 6px;text-align:center">
+            <div style="font-size:18px;margin-bottom:2px">😊</div>
+            <div style="font-size:12px;font-weight:700;color:#3B6D11">정상</div>
+            <div style="font-size:10px;color:#3B6D11;margin-top:1px">120/80 이하</div>
           </div>
-          <div style="background:#FAEEDA;border-radius:12px;padding:12px;text-align:center">
-            <div style="font-size:22px;margin-bottom:4px">😐</div>
-            <div style="font-size:13px;font-weight:700;color:#854F0B">주의</div>
-            <div style="font-size:11px;color:#854F0B;margin-top:2px">121~139 / 81~89</div>
+          <div style="background:#FAEEDA;border-radius:10px;padding:8px 6px;text-align:center">
+            <div style="font-size:18px;margin-bottom:2px">😐</div>
+            <div style="font-size:12px;font-weight:700;color:#854F0B">주의</div>
+            <div style="font-size:10px;color:#854F0B;margin-top:1px">121~139 / 81~89</div>
           </div>
-          <div style="background:#FCEBEB;border-radius:12px;padding:12px;text-align:center">
-            <div style="font-size:22px;margin-bottom:4px">😰</div>
-            <div style="font-size:13px;font-weight:700;color:#A32D2D">고혈압 1단계</div>
-            <div style="font-size:11px;color:#A32D2D;margin-top:2px">140~159 / 90~99</div>
+          <div style="background:#FCEBEB;border-radius:10px;padding:8px 6px;text-align:center">
+            <div style="font-size:18px;margin-bottom:2px">😰</div>
+            <div style="font-size:12px;font-weight:700;color:#A32D2D">고혈압 1단계</div>
+            <div style="font-size:10px;color:#A32D2D;margin-top:1px">140~159 / 90~99</div>
           </div>
-          <div style="background:#F7C1C1;border-radius:12px;padding:12px;text-align:center">
-            <div style="font-size:22px;margin-bottom:4px">🚨</div>
-            <div style="font-size:13px;font-weight:700;color:#791F1F">고혈압 2단계</div>
-            <div style="font-size:11px;color:#791F1F;margin-top:2px">160이상 / 100이상</div>
+          <div style="background:#F7C1C1;border-radius:10px;padding:8px 6px;text-align:center">
+            <div style="font-size:18px;margin-bottom:2px">🚨</div>
+            <div style="font-size:12px;font-weight:700;color:#791F1F">고혈압 2단계</div>
+            <div style="font-size:10px;color:#791F1F;margin-top:1px">160이상 / 100이상</div>
           </div>
         </div>
       </div>
-      <div class="tip-card">
-        <i class="ti ti-bulb"></i>
-        <div><div class="tip-title">건강 생활습관 TIP</div>
-        <div class="tip-body">싱겁게 먹기 · 규칙적인 운동 · 적정 체중 유지<br>금연 · 절주 · 스트레스 관리가 혈압 조절에 도움이 됩니다.</div></div>
-      </div>
+
     </div>
     <div id="t-history" style="display:none">
       <div class="metric-grid" id="emp-stats"></div>
@@ -674,7 +682,7 @@ function empLogin(){
       document.getElementById('emp-pin').value='';
       document.getElementById('emp-pin2').value='';
       confirmWrap.style.display='none';
-      document.getElementById('login-info-text').textContent='담당자에게 부여받은 ID와 휴대폰 뒷자리 4자리를 입력하세요.';
+      document.getElementById('login-info-text').textContent='숫자 4자리의 ID와 휴대폰 뒷자리 4자리를 입력하세요.';
       return;
     }
     localStorage.setItem('pin_'+key, pin);
@@ -696,7 +704,7 @@ function empLogout(){
     document.getElementById('emp-pin').value='';
     document.getElementById('emp-pin2').value='';
     document.getElementById('pin-confirm-wrap').style.display='none';
-    document.getElementById('login-info-text').textContent='담당자에게 부여받은 ID와 휴대폰 뒷자리 4자리를 입력하세요.';
+    document.getElementById('login-info-text').textContent='숫자 4자리의 ID와 휴대폰 뒷자리 4자리를 입력하세요.';
     go('s-login-emp');
   }
 }
